@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>notepad</title>
+</head>
+<style type="text/css">
+ol,ul{
+display:block;
+list-style-type:none;
+margin:3px;
+}
+</style><body>
+<div>&lt;!DOCTYPE html&gt;<br>
+&lt;html lang="zh-CN"&gt;<br>
+&lt;head&gt;<br>
+&lt;meta charset="UTF-8"&gt;<br>
+&lt;meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"&gt;<br>
+&lt;title&gt;&#35841;&#26159;&#21351;&#24213;&lt;/title&gt;<br>
+&lt;style&gt;<br>
+&nbsp; *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}<br>
+&nbsp; body{background:#f5f7fa;padding:20px;max-width:480px;margin:0 auto}<br>
+&nbsp; .page{display:none}<br>
+&nbsp; .page.active{display:block}<br>
+&nbsp; .card{background:#fff;border-radius:20px;padding:24px;margin:16px 0;box-shadow:0 4px 12px rgba(0,0,0,0.05)}<br>
+&nbsp; .title{font-size:22px;text-align:center;margin:20px 0}<br>
+&nbsp; .btn{width:100%;background:#007AFF;color:#fff;border:none;border-radius:16px;padding:18px 0;font-size:16px;margin:10px 0}<br>
+&nbsp; .btn.gray{background:#EAECEF;color:#333}<br>
+&nbsp; .word{font-size:28px;font-weight:bold;text-align:center;color:#007AFF;margin:20px 0}<br>
+&nbsp; .identity{font-size:17px;text-align:center;margin-bottom:10px}<br>
+&nbsp; .tip{color:#666;text-align:center;margin-top:10px}<br>
+&nbsp; .players{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}<br>
+&nbsp; .player{flex:1;min-width:70px;background:#fff;border:1px solid #eee;border-radius:14px;padding:14px;text-align:center}<br>
+&nbsp; .player.voted{background:#FFECEC;border-color:#FF3B30}<br>
+&lt;/style&gt;<br>
+&lt;/head&gt;<br>
+&lt;body&gt;<br>
+&lt;div class="page active" id="page-home"&gt;<br>
+&nbsp; &lt;div class="title"&gt;&#35841;&#26159;&#21351;&#24213;&lt;/div&gt;<br>
+&nbsp; &lt;div class="card"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;button class="btn" onclick="start(4)"&gt;4&#20154;&#23616;&lt;/button&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;button class="btn" onclick="start(5)"&gt;5&#20154;&#23616;&lt;/button&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;button class="btn" onclick="start(6)"&gt;6&#20154;&#23616;&lt;/button&gt;<br>
+&nbsp; &lt;/div&gt;<br>
+&lt;/div&gt;<br>
+&lt;div class="page" id="page-word"&gt;<br>
+&nbsp; &lt;div class="title"&gt;&#20320;&#30340;&#36523;&#20221;&lt;/div&gt;<br>
+&nbsp; &lt;div class="card"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;div class="identity" id="role"&gt;&lt;/div&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;div class="word" id="word"&gt;&lt;/div&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;div class="tip"&gt;&#35760;&#20303;&#21518;&#20256;&#32473;&#19979;&#19968;&#20301;&lt;/div&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;button class="btn" onclick="next()"&gt;&#25105;&#35760;&#20303;&#20102;&#65292;&#19979;&#19968;&#20301;&lt;/button&gt;<br>
+&nbsp; &lt;/div&gt;<br>
+&lt;/div&gt;<br>
+&lt;div class="page" id="page-vote"&gt;<br>
+&nbsp; &lt;div class="title"&gt;&#25237;&#31080;&#35841;&#26159;&#21351;&#24213;&lt;/div&gt;<br>
+&nbsp; &lt;div class="card"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;div class="players" id="voteList"&gt;&lt;/div&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;button class="btn gray" onclick="doVote()"&gt;&#30830;&#35748;&#25237;&#31080;&lt;/button&gt;<br>
+&nbsp; &lt;/div&gt;<br>
+&lt;/div&gt;<br>
+&lt;div class="page" id="page-result"&gt;<br>
+&nbsp; &lt;div class="title"&gt;&#28216;&#25103;&#32467;&#26463;&lt;/div&gt;<br>
+&nbsp; &lt;div class="card"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;div id="result" style="text-align:center;font-size:17px;margin-bottom:15px"&gt;&lt;/div&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;div id="info" style="text-align:center;color:#666"&gt;&lt;/div&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;button class="btn" onclick="home()"&gt;&#20877;&#26469;&#19968;&#23616;&lt;/button&gt;<br>
+&nbsp; &lt;/div&gt;<br>
+&lt;/div&gt;<br>
+&lt;script&gt;<br>
+const game={total:0,current:1,under:0,words:[],roles:[],vote:null};<br>
+const wordPool=[["&#29275;&#22902;","&#37240;&#22902;"],["&#20844;&#20132;","&#22320;&#38081;"],["&#35199;&#29916;","&#21704;&#23494;&#29916;"],["&#24494;&#20449;","QQ"],["&#30524;&#38236;","&#22696;&#38236;"],["&#38050;&#31508;","&#38085;&#31508;"],["&#39290;&#23376;","&#21253;&#23376;"],["&#25163;&#26426;","&#30005;&#35805;"],["&#29611;&#29808;","&#26376;&#23395;"]];<br>
+function show(id){document.querySelectorAll(".page").forEach(p=&gt;p.classList.remove("active"));document.getElementById(id).classList.add("active");}<br>
+function start(n){game.total=n;game.current=1;const pair=wordPool[Math.floor(Math.random()*wordPool.length)];game.words=pair;game.roles=[];game.under=Math.floor(Math.random()*n);for(let i=0;i&lt;n;i++)game.roles.push(i===game.under?"under":"normal");showWord();show("page-word");}<br>
+function showWord(){const i=game.current-1;const r=game.roles[i];document.getElementById("role").innerText=r==="under"?"&#20320;&#26159;&#65306;&#21351;&#24213;":"&#20320;&#26159;&#65306;&#24179;&#27665;";document.getElementById("word").innerText=r==="under"?game.words[1]:game.words[0];}<br>
+function next(){game.current++;if(game.current&gt;game.total){show("page-vote");renderVote();}else showWord();}<br>
+function renderVote(){const el=document.getElementById("voteList");el.innerHTML="";for(let i=1;i&lt;=game.total;i++){const d=document.createElement("div");d.className="player";d.innerText=i+"&#21495;";d.onclick=()=&gt;{document.querySelectorAll(".player").forEach(x=&gt;x.classList.remove("voted"));d.classList.add("voted");game.vote=i;};el.appendChild(d);}}<br>
+function doVote(){if(!game.vote)return alert("&#35831;&#36873;&#25321;&#25237;&#31080;&#23545;&#35937;");const win=game.vote-1===game.under;document.getElementById("result").innerText=win?"&#9989; &#24179;&#27665;&#32988;&#21033;&#65281;":"&#10060; &#21351;&#24213;&#32988;&#21033;&#65281;";document.getElementById("info").innerText="&#24179;&#27665;&#65306;"+game.words[0]+" &#65372; &#21351;&#24213;&#65306;"+game.words[1];show("page-result");}<br>
+function home(){show("page-home");}<br>
+&lt;/script&gt;<br>
+&lt;/body&gt;<br>
+&lt;/html&gt;<br>
+</div>
+</body>
+</html>
