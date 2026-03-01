@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>notepad</title>
+</head>
+<style type="text/css">
+ol,ul{
+display:block;
+list-style-type:none;
+margin:3px;
+}
+</style><body>
+<div>&lt;!DOCTYPE html&gt;<br>
+&lt;html lang="zh-CN"&gt;<br>
+&lt;head&gt;<br>
+&lt;meta charset="UTF-8"&gt;<br>
+&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;<br>
+&lt;title&gt;&#35841;&#26159;&#21351;&#24213; - &#30495;&#32852;&#26426;&#29256;&lt;/title&gt;<br>
+&lt;style&gt;<br>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Microsoft YaHei}<br>
+body{background:#f5f7fa;padding:20px;max-width:480px;margin:0 auto}<br>
+.page{display:none}<br>
+.page.active{display:block}<br>
+.card{background:#fff;border-radius:16px;padding:24px;margin:16px 0}<br>
+.title{font-size:22px;text-align:center;margin:20px 0}<br>
+.btn{width:100%;background:#007AFF;color:white;border:none;border-radius:16px;padding:18px 0;margin:10px 0}<br>
+.gray{background:#EAECEF;color:#333}<br>
+.room{font-size:26px;text-align:center;color:#007AFF;margin:20px 0}<br>
+.word{font-size:26px;font-weight:bold;text-align:center;color:#007AFF;margin:20px 0}<br>
+&lt;/style&gt;<br>
+&lt;/head&gt;<br>
+&lt;body&gt;<br>
+<br>
+&lt;div class="page active" id="home"&gt;<br>
+&nbsp; &lt;div class="title"&gt;&#35841;&#26159;&#21351;&#24213; &#183; &#32852;&#26426;&#29256;&lt;/div&gt;<br>
+&nbsp; &lt;div class="card"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;button class="btn" onclick="createRoom()"&gt;&#21019;&#24314;&#25151;&#38388;&lt;/button&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;button class="btn gray" onclick="joinRoom()"&gt;&#21152;&#20837;&#25151;&#38388;&lt;/button&gt;<br>
+&nbsp; &lt;/div&gt;<br>
+&lt;/div&gt;<br>
+<br>
+&lt;div class="page" id="room"&gt;<br>
+&nbsp; &lt;div class="room" id="roomId"&gt;&lt;/div&gt;<br>
+&nbsp; &lt;div class="card"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;button class="btn" id="start" style="display:none" onclick="startGame()"&gt;&#24320;&#22987;&#28216;&#25103;&lt;/button&gt;<br>
+&nbsp; &lt;/div&gt;<br>
+&lt;/div&gt;<br>
+<br>
+&lt;div class="page" id="game"&gt;<br>
+&nbsp; &lt;div class="card"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;div id="role" style="text-align:center;margin-bottom:10px"&gt;&lt;/div&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;div class="word" id="word"&gt;&lt;/div&gt;<br>
+&nbsp; &lt;/div&gt;<br>
+&lt;/div&gt;<br>
+<br>
+&lt;script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"&gt;&lt;/script&gt;<br>
+&lt;script&gt;<br>
+// &#25226;&#36825;&#37324;&#25442;&#25104;&#20320;&#33258;&#24049;&#30340;<br>
+const SUPABASE_URL = "https://ptbodenkvpfgrkxwoons.supabase.co";<br>
+const SUPABASE_KEY = "sb_publishable_KFsGmXC-CphI6VUpeVrRpQ_hEz3IR8e";<br>
+<br>
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);<br>
+const userId = Math.random().toString(36).slice(2,10);<br>
+let roomId;<br>
+<br>
+async function createRoom(){<br>
+&nbsp; roomId = prompt("4&#20301;&#25151;&#38388;&#21495;&#65306;").toUpperCase();<br>
+&nbsp; const words = [["&#29275;&#22902;","&#37240;&#22902;"],["&#35199;&#29916;","&#21704;&#23494;&#29916;"],["&#20844;&#20132;","&#22320;&#38081;"]];<br>
+&nbsp; const p = words[Math.random()*words.length|0];<br>
+&nbsp; await supabase.from("rooms").insert([{<br>
+&nbsp;&nbsp;&nbsp; id: roomId,<br>
+&nbsp;&nbsp;&nbsp; word1: p[0],<br>
+&nbsp;&nbsp;&nbsp; word2: p[1],<br>
+&nbsp;&nbsp;&nbsp; under_id: null,<br>
+&nbsp;&nbsp;&nbsp; started: false<br>
+&nbsp; }]);<br>
+&nbsp; await supabase.from("players").insert([{id:userId, room_id:roomId, nickname:"&#25105;"}]);<br>
+&nbsp; show("room");<br>
+&nbsp; document.getElementById("roomId").innerText = roomId;<br>
+&nbsp; document.getElementById("start").style.display = "block";<br>
+}<br>
+<br>
+async function joinRoom(){<br>
+&nbsp; roomId = prompt("&#36755;&#20837;&#25151;&#38388;&#21495;&#65306;").toUpperCase();<br>
+&nbsp; await supabase.from("players").insert([{id:userId, room_id:roomId, nickname:"&#25105;"}]);<br>
+&nbsp; show("room");<br>
+&nbsp; document.getElementById("roomId").innerText = roomId;<br>
+}<br>
+<br>
+async function startGame(){<br>
+&nbsp; const {data:ps} = await supabase.from("players").select("id").eq("room_id",roomId);<br>
+&nbsp; const under = ps[Math.random()*ps.length|0].id;<br>
+&nbsp; await supabase.from("rooms").update({under_id:under, started:true}).eq("id",roomId);<br>
+&nbsp; showMyWord();<br>
+}<br>
+<br>
+async function showMyWord(){<br>
+&nbsp; const {data:room} = await supabase.from("rooms").select("*").eq("id",roomId).single();<br>
+&nbsp; const isUnder = userId === room.under_id;<br>
+&nbsp; document.getElementById("role").innerText = isUnder ? "&#20320;&#26159;&#65306;&#21351;&#24213;" : "&#20320;&#26159;&#65306;&#24179;&#27665;";<br>
+&nbsp; document.getElementById("word").innerText = isUnder ? room.word2 : room.word1;<br>
+&nbsp; show("game");<br>
+}<br>
+<br>
+function show(id){<br>
+&nbsp; document.querySelectorAll(".page").forEach(p=&gt;p.classList.remove("active"));<br>
+&nbsp; document.getElementById(id).classList.add("active");<br>
+}<br>
+&lt;/script&gt;<br>
+&lt;/body&gt;<br>
+&lt;/html&gt;<br>
+</div>
+</body>
+</html>
